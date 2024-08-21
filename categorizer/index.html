@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการข้อกล่าวหาการทุจริต</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+        .container {
+            width: 60%;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #357ae8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>จัดการข้อกล่าวหาการทุจริต</h1>
+
+        <div class="input-group">
+            <label for="file-upload-1">อัปโหลดเอกสาร</label>
+            <textarea id="file-upload-1" placeholder="โปรดอัปโหลดไฟล์เพื่อดูผล" rows="5"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label for="file-upload-2">สรุปข้อกล่าวหา</label>
+            <textarea id="file-upload-2" placeholder="โปรดอัปโหลดไฟล์เพื่อดูผล" rows="5"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label for="file-upload-3">สรุปข้อกล่าวหา</label>
+            <textarea id="file-upload-3" placeholder="โปรดอัปโหลดไฟล์เพื่อดูผล" rows="5"></textarea>
+        </div>
+
+        <button id="submit-btn">ยืนยันผลสรุป</button>
+    </div>
+
+</body>
+</html>
