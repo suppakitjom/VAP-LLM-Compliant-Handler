@@ -3,3 +3,4 @@ token.json
 client_secret.json
 .DS_Store
 __pycache__/
+NACC-AI Google Cloud Credentials.json
