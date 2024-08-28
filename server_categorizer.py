@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
 from langserve import add_routes
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from config import LANGCHAIN_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, GOOGLE_API_KEY
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_API_KEY"] = LANGCHAIN_API_KEY
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 categories = '''เรียกรับสินบน ให้/ขอให้ หรือรับว่าจะให้ทรัพย์สินหรือประโยชน์อื่นใดแก่เจ้าหน้าที่ของรัฐ
 จัดซื้อจัดจ้าง
@@ -35,6 +41,7 @@ if ON_PREM:
 else:
     llm = ChatOpenAI(model="gpt-4o-mini")
 
+parser = StrOutputParser()
 
 app = FastAPI(
     title="LangChain Server",
@@ -54,7 +61,7 @@ app.add_middleware(
 
 add_routes(
     app,
-    prompt | llm,
+    prompt | llm | parser,
     path="/categorizer",
 )
 

@@ -7,4 +7,4 @@ categorizer = RemoteRunnable("http://localhost:8000/categorizer/")
 r = categorizer.invoke({
         "complaint": 'ตำรวจเรียกรับสินบนจากประชาชน',
     })
-print(r.content.strip())
+print(r.strip())
