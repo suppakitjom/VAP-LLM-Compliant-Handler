@@ -5,9 +5,8 @@ from langchain_ollama import ChatOllama
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langserve import add_routes
 from fastapi.middleware.cors import CORSMiddleware
-import json
 import os
-from config import LANGCHAIN_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, GOOGLE_API_KEY
+from config import LANGCHAIN_API_KEY, OPENAI_API_KEY
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_API_KEY"] = LANGCHAIN_API_KEY
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
@@ -40,32 +39,31 @@ summarizer_prompt = ChatPromptTemplate.from_messages(
 if ON_PREM:
     json_llm = ChatOllama(model="gemma2",format="json",temperature=0)
 else:
-    llm = ChatOpenAI(model="gpt-4o-mini")
+    llm = ChatOpenAI(model="gpt-4o-mini",temperature=0)
     json_llm = llm.bind(response_format={"type": "json_object"})
 
 json_parser = JsonOutputParser()
 
 summarizer_chain = summarizer_prompt | json_llm | json_parser
 
-categories = '''เรียกรับสินบน ให้/ขอให้ หรือรับว่าจะให้ทรัพย์สินหรือประโยชน์อื่นใดแก่เจ้าหน้าที่ของรัฐ
-จัดซื้อจัดจ้าง
-ยักยอก/เบียดบังเงินหรือทรัพย์สินของทางราชการ 
-ออกเอกสารสิทธิ
-การบริหารงานบุคคล (การบรรจุ/แต่งตั้ง/เลื่อนตำแหน่ง/โยกย้าย/ลงโทษวินัย) 
-ทุจริตในการจัดทำงบประมาณ/โครงการ/เบิกจ่ายเงินในโครงการอันเป็นเท็จ
-ปฏิบัติหรือละเว้นการปฏิบัติหน้าที่โดยมิชอบหรือโดยทุจริต
-การขัดกันระหว่างประโยชน์ส่วนบุคคลและประโยชน์ส่วนรวม
-ร่ำรวยผิดปกติ
-ฝ่าฝืนหรือไม่ปฏิบัติตามมาตรฐานทางจริยธรรมอย่างร้ายแรง'''
-cat = []
-for x in categories.split('\n'):
-    cat.append(x.strip())
+categories = [
+    "เรียกรับสินบน ให้/ขอให้ หรือรับว่าจะให้ทรัพย์สินหรือประโยชน์อื่นใดแก่เจ้าหน้าที่ของรัฐ",
+    "จัดซื้อจัดจ้าง",
+    "ยักยอก/เบียดบังเงินหรือทรัพย์สินของทางราชการ",
+    "ออกเอกสารสิทธิ",
+    "การบริหารงานบุคคล (การบรรจุ/แต่งตั้ง/เลื่อนตำแหน่ง/โยกย้าย/ลงโทษวินัย)",
+    "ทุจริตในการจัดทำงบประมาณ/โครงการ/เบิกจ่ายเงินในโครงการอันเป็นเท็จ",
+    "ปฏิบัติหรือละเว้นการปฏิบัติหน้าที่โดยมิชอบหรือโดยทุจริต",
+    "การขัดกันระหว่างประโยชน์ส่วนบุคคลและประโยชน์ส่วนรวม",
+    "ร่ำรวยผิดปกติ",
+    "ฝ่าฝืนหรือไม่ปฏิบัติตามมาตรฐานทางจริยธรรมอย่างร้ายแรง"
+]
 
 prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            '''You are given a complaint in Thai and you must categorize it into only one of the following categories: {categories}. You must only provide the category name in full as the output. Do not make up category names'''.format(categories=', '.join(cat)),
+            '''You are given a complaint in Thai and you must categorize it into only one of the following categories: {categories}. You must only provide the category name in full as the output. Do not make up category names'''.format(categories=', '.join(categories)),
         ),
         ("human", "{complaint}"),
     ]
