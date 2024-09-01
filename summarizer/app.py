@@ -1,55 +1,58 @@
 import json
-import os
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
-from typing import Optional, List
-from langchain_core.pydantic_v1 import BaseModel, Field
+import os
 
-def SummarizerHandler(event, context):
-    # Debugging: Print the event structure
-    print("Event received:", json.dumps(event))
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-    # Safeguard: Check if 'body' is in the event
-    if 'body' not in event:
-        return {
-            'statusCode': 400,
-            'body': json.dumps({"error": "No 'body' found in the event"})
-        }
+ON_PREM = False
 
+def SummarizerHandler(event, _):
     body = json.loads(event['body'])
-    text_to_summarize = body.get('message', '')
+    complaint = body['message']
 
-    if not text_to_summarize:
-        return {
-            'statusCode': 400,
-            'body': json.dumps({"error": "No 'message' found in the request body"})
-        }
+    summarizer_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                '''You are a helpful assistant that digests a complaint in Thai given into JSON format, in Thai as follow:
+        ### format
+        Summary: '...', AllegedParty: '...', Accusation: '...', Location: '...', Amount: '...'
+        
+        ### field description
+        where Summary is the concise summary of the complaint, and just explain what the alleged party is accused of, 
+        AllegedParty is the person(people) or/and organization(s) being accused (NOT THE ACCUSER), if there are multiple, separate them with comma, 
+        Accusation is the action that the perpetrator is accused of, 
+        Location is the province, district, or subdistrict, 
+        Amount is the amount of money, if there is any involved, in the format of (number) บาท for example 1,000,000 บาท
+        
+        ### additional information
+        the Summary is the only field that is required. if information is not explicitly available for any other field, just leave it as empty string
+        EVERY FIELD MUST BE FILLED IN FORMAL THAI LANGUAGE''',
+            ),
+            ("human", "{complaint}"),
+        ]
+    )
 
-    os.environ["LANGCHAIN_TRACING_V2"] = "true"
-    os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
-    os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+    if ON_PREM:
+        json_llm = ChatOllama(model="gemma2", format="json", temperature=0)
+    else:
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        json_llm = llm.bind(response_format={"type": "json_object"})
 
-    class Summarizer(BaseModel):
-        Summary: str = Field(description="the summary, be concise")
-        Perpetrator: Optional[List[str]] = Field(description="The person(people) or/and organization(s) being accused")
-        Action: Optional[str] = Field(description="the action")
-        Where: Optional[str] = Field(description="province, district, or subdistrict")
-        Amount: Optional[str] = Field(description="the amount of money, if there is any involved")
+    json_parser = JsonOutputParser()
 
-        def __str__(self):
-            return f"Summary: {self.Summary}\nPerpetrator: {self.Perpetrator}\nAction: {self.Action}\nWhere: {self.Where}\nAmount: {self.Amount}"
+    summarizer_chain = summarizer_prompt | json_llm | json_parser
 
-    model = ChatOpenAI(model="gpt-4o-mini")
-    structured_model = model.with_structured_output(Summarizer)
-
-    result = structured_model.invoke(text_to_summarize)
-
+    response = summarizer_chain.invoke({
+        "complaint": complaint
+    })
+    
     return {
         'statusCode': 200,
-        'body': json.dumps({"summary": str(result)})
+        'body': json.dumps({"result": response})
     }
-
-if __name__ == '__main__':
-    event = {
-        'body': json.dumps({"message": "This is a test message"})
-    }
-    SummarizerHandler(event, 'None')

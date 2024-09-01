@@ -25,14 +25,15 @@ jsonpatch==1.33
 jsonpointer==3.0.0
 langchain==0.2.14
 langchain-core==0.2.34
-langchain-openai==0.1.22
+langchain-ollama
+langchain_openai
 langchain-text-splitters==0.2.2
 langsmith==0.1.104
 multidict==6.0.5
 numpy==1.26.4
 oauthlib==3.2.2
-openai==1.42.0
 orjson==3.10.7
+openai
 packaging==24.1
 proto-plus==1.24.0
 protobuf==4.25.4
