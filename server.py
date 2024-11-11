@@ -11,7 +11,7 @@ os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_API_KEY"] = LANGCHAIN_API_KEY
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
-ON_PREM = True
+ON_PREM = False
 
 summarizer_prompt = ChatPromptTemplate.from_messages(
     [
@@ -23,7 +23,7 @@ summarizer_prompt = ChatPromptTemplate.from_messages(
     
     ### field description
      where Summary is the concise summary of the complaint, and just explain what the alleged party is accused of, 
-     AllegedParty is the person(people) or/and organization(s) being accused (NOT THE ACCUSER), if there are multiple, separate them with comma, 
+     AllegedParty is the person(people) or/and officer of organization(s) being accused (NOT THE ACCUSER), if there are multiple, separate them with comma. If the accused is an organization, say that it's the officer of the organization,
      Accusation is the action that the perpetrator is accused of, 
      Location is the province, district, or subdistrict, 
      Amount is the amount of money, if there is any involved, in the format of (number) บาท for example 1,000,000 บาท
@@ -37,7 +37,7 @@ summarizer_prompt = ChatPromptTemplate.from_messages(
 )
 
 if ON_PREM:
-    json_llm = ChatOllama(model="gemma2",format="json",temperature=0)
+    json_llm = ChatOllama(model="llama3.2",format="json",temperature=0)
 else:
     llm = ChatOpenAI(model="gpt-4o-mini",temperature=0)
     json_llm = llm.bind(response_format={"type": "json_object"})
@@ -63,14 +63,14 @@ prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            '''You are given a complaint in Thai and you must categorize it into only one of the following categories: {categories}. You must only provide the category name in full as the output. Do not make up category names'''.format(categories=', '.join(categories)),
+            '''You are given a complaint in Thai and you must return a list of 3 most probable categories of the following: {categories}. You must only provide the list of category names in full as the output. Do not make up category names'''.format(categories=', '.join(categories)),
         ),
         ("human", "{complaint}"),
     ]
 )
 
 if ON_PREM:
-    llm = ChatOllama(model="gemma2")
+    llm = ChatOllama(model="llama3.2")
 else:
     llm = ChatOpenAI(model="gpt-4o-mini")
 
